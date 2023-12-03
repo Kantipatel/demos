@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: shell-demo
+spec:
+  volumes:
+  - name: shared-data
+    emptyDir: {}
+  containers:
+  - name: nginx-demo
+    image: nginx
+    resources:
+          limits:
+            cpu: 200m
+            memory: 500Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+    env:
+      - name: MY_POD_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.podIP
+      - name: MY_POD_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.name
+      - name: MY_NODE_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: spec.nodeName
+      - name: SERVICE_PORT
+        value: "80"
+      - name: SERVICE_IP
+        value: "172.17.0.1"
+      - name: UNCHANGED_REFERENCE
+        value: "$(PROTOCOL)://$(SERVICE_IP):$(SERVICE_PORT)"
+      - name: PROTOCOL
+        value: "https"
+      - name: SERVICE_ADDRESS
+        value: "$(PROTOCOL)://$(SERVICE_IP):$(SERVICE_PORT)"
+      - name: ESCAPED_REFERENCE
+        value: "$$(PROTOCOL)://$(SERVICE_IP):$(SERVICE_PORT)"
+    volumeMounts:
+    - name: shared-data
+      mountPath: /usr/share/nginx/html
+  hostNetwork: true
+  dnsPolicy: Default
